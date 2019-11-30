@@ -3,7 +3,7 @@ const users = require('../helpers/users');
 const runOp = require('../helpers/runner');
 const plot = require('../helpers/plot');
 const result = require('../helpers/result');
-const { iterations: iterations } = require('../helpers/iterations');
+const { iterations } = require('../helpers/iterations');
 
 const { op: check, name: checkName } = require('./check/check');
 const { op: checkTransaction, name: checkTransactionName } = require('./check/checkTransaction');
