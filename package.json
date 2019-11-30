@@ -1,0 +1,16 @@
+{
+  "name": "MongoDBTransactionsPerformance",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "runOp": "node --max-old-space-size=8192 ./operations/runOp.js"
+  },
+  "dependencies": {
+    "@stdlib/stdlib": "0.0.90",
+    "microseconds": "^0.1.0",
+    "mongodb": "^3.3.4",
+    "mongodb-memory-server": "^6.0.1",
+    "progress-barjs": "^2.2.1",
+    "ttest": "^2.1.0"
+  }
+}
