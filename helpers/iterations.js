@@ -1,6 +1,7 @@
-const iterations = [];
-for (let i = 0; i < 300; i++) {
-  iterations.push(i);
-}
+const iterations300 = [...Array(300).keys()];
+const iterations = [...Array(process.env.ITERATIONS_NUMBER).keys()];
 
-module.exports = iterations;
+module.exports = {
+  iterations300,
+  iterations,
+};

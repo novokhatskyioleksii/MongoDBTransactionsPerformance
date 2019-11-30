@@ -5,14 +5,14 @@ const Bar = require('progress-barjs');
 const mkdirAsync = util.promisify(fs.mkdir);
 const writeFileAsync = util.promisify(fs.writeFile);
 
-const iterations = require('./iterations');
+const { iterations300 } = require('./iterations');
 
 // const timeout = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const runIterations = async (op, client, db, name) => {
   let bar = Bar({
     label: `${name.padEnd(50)}`,
-    total: iterations.length,
+    total: iterations300.length,
     show: {
       active:{
         date:true,
@@ -29,7 +29,7 @@ const runIterations = async (op, client, db, name) => {
     },
   });
   const results = [];
-  for (let i of iterations) {
+  for (let i of iterations300) {
     // await timeout(50);
     const result = await op(client, db, i);
     results.push({ [i]: result });
@@ -38,10 +38,10 @@ const runIterations = async (op, client, db, name) => {
   return results;
 };
 
-const runOp = async (op, client, db, path, name) => {
+const runOp = async (op, client, db, path, name, i) => {
   const results = await runIterations(op, client, db, name);
-  await mkdirAsync(`../results/${path}`, { recursive: true });
-  await writeFileAsync(`../results/${path}/${name}Results.json`, JSON.stringify({ results }, null, 2));
+  await mkdirAsync(`../results/${i}/${path}`, { recursive: true });
+  await writeFileAsync(`../results/${i}/${path}/${name}Results.json`, JSON.stringify({ results }, null, 2));
 };
 
 module.exports = runOp;

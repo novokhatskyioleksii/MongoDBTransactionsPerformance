@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "runOp": "node --max-old-space-size=8192 ./operations/runOp.js"
+    "runOp": "node --max-old-space-size=8192 ITERATIONS_NUMBER=100 ./operations/runOp.js"
   },
   "dependencies": {
     "@stdlib/stdlib": "0.0.90",

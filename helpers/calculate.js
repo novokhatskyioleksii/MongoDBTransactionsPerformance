@@ -41,7 +41,7 @@ const filterOutliers = (someArray) => {
   return values.filter((x) => (x <= maxValue) && (x >= minValue));
 };
 
-const calculate = async (results, resultsT, path, filename) => {
+const calculate = async (results, resultsT, path, filename, i) => {
   const filteredResult = filterOutliers(results.map((result) => Object.values(result)[0]));
   const filteredResultT = filterOutliers(resultsT.map((result) => Object.values(result)[0]));
 
@@ -91,13 +91,13 @@ const calculate = async (results, resultsT, path, filename) => {
 
   const final = !nullHypothesis ? success : fail;
 
-  await mkdirAsync(`../results-plots/${path}`, { recursive: true });
-  await writeFileAsync(`../results-plots/${path}/${filename.replace('Transaction', '').replace('json', 'html')}`, vtree
+  await mkdirAsync(`../results-plots/${i}/${path}`, { recursive: true });
+  await writeFileAsync(`../results-plots/${i}/${path}/${filename.replace('Transaction', '').replace('json', 'html')}`, vtree
       + `<h3>Mean with standard deviation</h3>
-<h4 style="color: teal">(No transaction): ${getMean(filteredResult)} &#177; ${getSD(filteredResult)},</h4>
-<h4 style="color: #ffbf00">(Transaction): ${getMean(filteredResultT)} &#177; ${getSD(filteredResultT)}</h4>`
+<h4 style="color: teal">(No transaction): ${getMean(filteredResult).toFixed(2)} &#177; ${getSD(filteredResult).toFixed(2)} microseconds</h4>
+<h4 style="color: #ffbf00">(Transaction): ${getMean(filteredResultT).toFixed(2)} &#177; ${getSD(filteredResultT).toFixed(2)} microseconds</h4>`
       + final);
-  await mkdirAsync(`../results-calc`, { recursive: true });
+  await mkdirAsync('../results-calc', { recursive: true });
   try {
     await statAsync('../results-calc/results.json');
   } catch (e) {
@@ -111,4 +111,9 @@ const calculate = async (results, resultsT, path, filename) => {
   await writeFileAsync('../results-calc/results.json', JSON.stringify(resultsCalc, null, 2));
 };
 
-module.exports = calculate;
+module.exports = {
+  getMean,
+  getSD,
+  filterOutliers,
+  calculate,
+};

@@ -1,7 +1,9 @@
 const createMongoInstance = require('../db/db');
 const users = require('../helpers/users');
 const runOp = require('../helpers/runner');
-const plot = require('../plot/plot');
+const plot = require('../helpers/plot');
+const result = require('../helpers/result');
+const { iterations: iterations } = require('../helpers/iterations');
 
 const { op: check, name: checkName } = require('./check/check');
 const { op: checkTransaction, name: checkTransactionName } = require('./check/checkTransaction');
@@ -35,238 +37,245 @@ const { op: insertOneUpdateOneDeleteOneFindOneTransaction, name: insertOneUpdate
 const { op: insertManyUpdateManyDeleteManyFind, name: insertManyUpdateManyDeleteManyFindName } = require('./mixed/insertManyUpdateManyDeleteManyFind');
 const { op: insertManyUpdateManyDeleteManyFindTransaction, name: insertManyUpdateManyDeleteManyFindTransactionName } = require('./mixed/insertManyUpdateManyDeleteManyFindTransaction');
 
-const checkRun = async (client, db) => {
-  return runOp(check, client, db, 'check', checkName);
+const checkRun = async (client, db, i) => {
+  return runOp(check, client, db, 'check', checkName, i);
 };
 
-const checkTransactionRun = async (client, db) => {
-  await runOp(checkTransaction, client, db, 'check', checkTransactionName);
-  await plot('check', `${checkTransactionName}Results.json`);
+const checkTransactionRun = async (client, db, i) => {
+  await runOp(checkTransaction, client, db, 'check', checkTransactionName, i);
+  await plot('check', `${checkTransactionName}Results.json`, i);
 };
 
-const insertOneRun = async (client, db) => {
-  await runOp(insertOne, client, db, 'insert', insertOneName);
+const insertOneRun = async (client, db, i) => {
+  await runOp(insertOne, client, db, 'insert', insertOneName, i);
   await db.collection('users').deleteMany({});
 };
 
-const insertOneTransactionRun = async (client, db) => {
-  await runOp(insertOneTransaction, client, db, 'insert', insertOneTransactionName);
+const insertOneTransactionRun = async (client, db, i) => {
+  await runOp(insertOneTransaction, client, db, 'insert', insertOneTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('insert', `${insertOneTransactionName}Results.json`);
+  await plot('insert', `${insertOneTransactionName}Results.json`, i);
 };
 
-const insertManyRun = async (client, db) => {
-  await runOp(insertMany, client, db, 'insert', insertManyName);
+const insertManyRun = async (client, db, i) => {
+  await runOp(insertMany, client, db, 'insert', insertManyName, i);
   await db.collection('users').deleteMany({});
 };
 
-const insertManyTransactionRun = async (client, db) => {
-  await runOp(insertManyTransaction, client, db, 'insert', insertManyTransactionName);
+const insertManyTransactionRun = async (client, db, i) => {
+  await runOp(insertManyTransaction, client, db, 'insert', insertManyTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('insert', `${insertManyTransactionName}Results.json`);
+  await plot('insert', `${insertManyTransactionName}Results.json`, i);
 };
 
-const updateOneRun = async (client, db) => {
+const updateOneRun = async (client, db, i) => {
   await db.collection('users').insertOne(users[0]);
-  await runOp(updateOne, client, db, 'update', updateOneName);
+  await runOp(updateOne, client, db, 'update', updateOneName, i);
   await db.collection('users').deleteMany({});
 };
 
-const updateOneTransactionRun = async (client, db) => {
+const updateOneTransactionRun = async (client, db, i) => {
   await db.collection('users').insertOne(users[0]);
-  await runOp(updateOneTransaction, client, db, 'update', updateOneTransactionName);
+  await runOp(updateOneTransaction, client, db, 'update', updateOneTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('update', `${updateOneTransactionName}Results.json`);
+  await plot('update', `${updateOneTransactionName}Results.json`, i);
 };
 
-const updateManyRun = async (client, db) => {
+const updateManyRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(updateMany, client, db, 'update', updateManyName);
+  await runOp(updateMany, client, db, 'update', updateManyName, i);
   await db.collection('users').deleteMany({});
 };
 
-const updateManyTransactionRun = async (client, db) => {
+const updateManyTransactionRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(updateManyTransaction, client, db, 'update', updateManyTransactionName);
+  await runOp(updateManyTransaction, client, db, 'update', updateManyTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('update', `${updateManyTransactionName}Results.json`);
+  await plot('update', `${updateManyTransactionName}Results.json`, i);
 };
 
-const deleteOneRun = async (client, db) => {
+const deleteOneRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(deleteOne, client, db, 'delete', deleteOneName);
+  await runOp(deleteOne, client, db, 'delete', deleteOneName, i);
   await db.collection('users').deleteMany({});
 };
 
-const deleteOneTransactionRun = async (client, db) => {
+const deleteOneTransactionRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(deleteOneTransaction, client, db, 'delete', deleteOneTransactionName);
+  await runOp(deleteOneTransaction, client, db, 'delete', deleteOneTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('delete', `${deleteOneTransactionName}Results.json`);
+  await plot('delete', `${deleteOneTransactionName}Results.json`, i);
 };
 
-const deleteManyRun = async (client, db) => {
+const deleteManyRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(deleteMany, client, db, 'delete', deleteManyName);
+  await runOp(deleteMany, client, db, 'delete', deleteManyName, i);
   await db.collection('users').deleteMany({});
 };
 
-const deleteManyTransactionRun = async (client, db) => {
+const deleteManyTransactionRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(deleteManyTransaction, client, db, 'delete', deleteManyTransactionName);
+  await runOp(deleteManyTransaction, client, db, 'delete', deleteManyTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('delete', `${deleteManyTransactionName}Results.json`);
+  await plot('delete', `${deleteManyTransactionName}Results.json`, i);
 };
 
-const findOneRun = async (client, db) => {
+const findOneRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(findOne, client, db, 'find', findOneName);
+  await runOp(findOne, client, db, 'find', findOneName, i);
   await db.collection('users').deleteMany({});
 };
 
-const findOneTransactionRun = async (client, db) => {
+const findOneTransactionRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(findOneTransaction, client, db, 'find', findOneTransactionName);
+  await runOp(findOneTransaction, client, db, 'find', findOneTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('find', `${findOneTransactionName}Results.json`);
+  await plot('find', `${findOneTransactionName}Results.json`, i);
 };
 
-const findRun = async (client, db) => {
+const findRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(find, client, db, 'find', findName);
+  await runOp(find, client, db, 'find', findName, i);
   await db.collection('users').deleteMany({});
 };
 
-const findTransactionRun = async (client, db) => {
+const findTransactionRun = async (client, db, i) => {
   await db.collection('users').insertMany(users);
-  await runOp(findTransaction, client, db, 'find', findTransactionName);
+  await runOp(findTransaction, client, db, 'find', findTransactionName, i);
   await db.collection('users').deleteMany({});
-  await plot('find', `${findTransactionName}Results.json`);
+  await plot('find', `${findTransactionName}Results.json`, i);
 };
 
-const insertOneUpdateOneDeleteOneRun = async (client, db) => {
+const insertOneUpdateOneDeleteOneRun = async (client, db, i) => {
   await db.collection('users2').insertMany(users);
   await db.collection('users3').insertMany(users);
-  await runOp(insertOneUpdateOneDeleteOne, client, db, 'mixed', insertOneUpdateOneDeleteOneName);
+  await runOp(insertOneUpdateOneDeleteOne, client, db, 'mixed', insertOneUpdateOneDeleteOneName, i);
   await db.collection('users1').deleteMany({});
   await db.collection('users2').deleteMany({});
   await db.collection('users3').deleteMany({});
 };
 
-const insertOneUpdateOneDeleteOneTransactionRun = async (client, db) => {
+const insertOneUpdateOneDeleteOneTransactionRun = async (client, db, i) => {
   await db.collection('users2').insertMany(users);
   await db.collection('users3').insertMany(users);
-  await runOp(insertOneUpdateOneDeleteOneTransaction, client, db, 'mixed', insertOneUpdateOneDeleteOneTransactionName);
+  await runOp(insertOneUpdateOneDeleteOneTransaction, client, db, 'mixed', insertOneUpdateOneDeleteOneTransactionName, i);
   await db.collection('users1').deleteMany({});
   await db.collection('users2').deleteMany({});
   await db.collection('users3').deleteMany({});
-  await plot('mixed', `${insertOneUpdateOneDeleteOneTransactionName}Results.json`);
+  await plot('mixed', `${insertOneUpdateOneDeleteOneTransactionName}Results.json`, i);
 };
 
-const insertManyUpdateManyDeleteManyRun = async (client, db) => {
+const insertManyUpdateManyDeleteManyRun = async (client, db, i) => {
   await db.collection('users2').insertMany(users);
   await db.collection('users3').insertMany(users);
-  await runOp(insertManyUpdateManyDeleteMany, client, db, 'mixed', insertManyUpdateManyDeleteManyName);
-  await db.collection('users1').deleteMany({});
-  await db.collection('users2').deleteMany({});
-  await db.collection('users3').deleteMany({});
-};
-
-const insertManyUpdateManyDeleteManyTransactionRun = async (client, db) => {
-  await db.collection('users2').insertMany(users);
-  await db.collection('users3').insertMany(users);
-  await runOp(insertManyUpdateManyDeleteManyTransaction, client, db, 'mixed', insertManyUpdateManyDeleteManyTransactionName);
-  await db.collection('users1').deleteMany({});
-  await db.collection('users2').deleteMany({});
-  await db.collection('users3').deleteMany({});
-  await plot('mixed', `${insertManyUpdateManyDeleteManyTransactionName}Results.json`);
-};
-
-const insertOneUpdateOneDeleteOneFindOneRun = async (client, db) => {
-  await db.collection('users2').insertMany(users);
-  await db.collection('users3').insertMany(users);
-  await runOp(insertOneUpdateOneDeleteOneFindOne, client, db, 'mixed', insertOneUpdateOneDeleteOneFindOneName);
+  await runOp(insertManyUpdateManyDeleteMany, client, db, 'mixed', insertManyUpdateManyDeleteManyName, i);
   await db.collection('users1').deleteMany({});
   await db.collection('users2').deleteMany({});
   await db.collection('users3').deleteMany({});
 };
 
-const insertOneUpdateOneDeleteOneFindOneTransactionRun = async (client, db) => {
+const insertManyUpdateManyDeleteManyTransactionRun = async (client, db, i) => {
   await db.collection('users2').insertMany(users);
   await db.collection('users3').insertMany(users);
-  await runOp(insertOneUpdateOneDeleteOneFindOneTransaction, client, db, 'mixed', insertOneUpdateOneDeleteOneFindOneTransactionName);
+  await runOp(insertManyUpdateManyDeleteManyTransaction, client, db, 'mixed', insertManyUpdateManyDeleteManyTransactionName, i);
   await db.collection('users1').deleteMany({});
   await db.collection('users2').deleteMany({});
   await db.collection('users3').deleteMany({});
-  await plot('mixed', `${insertOneUpdateOneDeleteOneFindOneTransactionName}Results.json`);
+  await plot('mixed', `${insertManyUpdateManyDeleteManyTransactionName}Results.json`, i);
 };
 
-const insertManyUpdateManyDeleteManyFindRun = async (client, db) => {
+const insertOneUpdateOneDeleteOneFindOneRun = async (client, db, i) => {
   await db.collection('users2').insertMany(users);
   await db.collection('users3').insertMany(users);
-  await runOp(insertManyUpdateManyDeleteManyFind, client, db, 'mixed', insertManyUpdateManyDeleteManyFindName);
+  await runOp(insertOneUpdateOneDeleteOneFindOne, client, db, 'mixed', insertOneUpdateOneDeleteOneFindOneName, i);
   await db.collection('users1').deleteMany({});
   await db.collection('users2').deleteMany({});
   await db.collection('users3').deleteMany({});
 };
 
-const insertManyUpdateManyDeleteManyFindTransactionRun = async (client, db) => {
+const insertOneUpdateOneDeleteOneFindOneTransactionRun = async (client, db, i) => {
   await db.collection('users2').insertMany(users);
   await db.collection('users3').insertMany(users);
-  await runOp(insertManyUpdateManyDeleteManyFindTransaction, client, db, 'mixed', insertManyUpdateManyDeleteManyFindTransactionName);
+  await runOp(insertOneUpdateOneDeleteOneFindOneTransaction, client, db, 'mixed', insertOneUpdateOneDeleteOneFindOneTransactionName, i);
   await db.collection('users1').deleteMany({});
   await db.collection('users2').deleteMany({});
   await db.collection('users3').deleteMany({});
-  await plot('mixed', `${insertManyUpdateManyDeleteManyFindTransactionName}Results.json`);
+  await plot('mixed', `${insertOneUpdateOneDeleteOneFindOneTransactionName}Results.json`, i);
+};
+
+const insertManyUpdateManyDeleteManyFindRun = async (client, db, i) => {
+  await db.collection('users2').insertMany(users);
+  await db.collection('users3').insertMany(users);
+  await runOp(insertManyUpdateManyDeleteManyFind, client, db, 'mixed', insertManyUpdateManyDeleteManyFindName, i);
+  await db.collection('users1').deleteMany({});
+  await db.collection('users2').deleteMany({});
+  await db.collection('users3').deleteMany({});
+};
+
+const insertManyUpdateManyDeleteManyFindTransactionRun = async (client, db, i) => {
+  await db.collection('users2').insertMany(users);
+  await db.collection('users3').insertMany(users);
+  await runOp(insertManyUpdateManyDeleteManyFindTransaction, client, db, 'mixed', insertManyUpdateManyDeleteManyFindTransactionName, i);
+  await db.collection('users1').deleteMany({});
+  await db.collection('users2').deleteMany({});
+  await db.collection('users3').deleteMany({});
+  await plot('mixed', `${insertManyUpdateManyDeleteManyFindTransactionName}Results.json`, i);
 };
 
 const run = async () => {
   try {
     const { client, db, replSet } = await createMongoInstance();
-    await db.createCollection('users');
-    await db.createCollection('users1');
-    await db.createCollection('users2');
-    await db.createCollection('users3');
-    await db.collection('users').insertMany(users);
 
-    await checkRun(client, db);
-    await checkTransactionRun(client, db);
+    for (let i of iterations) {
+      console.log('Iteration #', i + 1);
 
-    await db.collection('users').deleteMany({});
+      await db.createCollection('users');
+      await db.createCollection('users1');
+      await db.createCollection('users2');
+      await db.createCollection('users3');
+      await db.collection('users').insertMany(users);
 
-    await insertOneRun(client, db);
-    await insertOneTransactionRun(client, db);
-    await insertManyRun(client, db);
-    await insertManyTransactionRun(client, db);
+      await checkRun(client, db, i + 1);
+      await checkTransactionRun(client, db, i + 1);
 
-    await updateOneRun(client, db);
-    await updateOneTransactionRun(client, db);
-    await updateManyRun(client, db);
-    await updateManyTransactionRun(client, db);
+      await db.collection('users').deleteMany({});
 
-    await deleteOneRun(client, db);
-    await deleteOneTransactionRun(client, db);
-    await deleteManyRun(client, db);
-    await deleteManyTransactionRun(client, db);
+      await insertOneRun(client, db, i + 1);
+      await insertOneTransactionRun(client, db, i + 1);
+      await insertManyRun(client, db, i + 1);
+      await insertManyTransactionRun(client, db, i + 1);
 
-    await findOneRun(client, db);
-    await findOneTransactionRun(client, db);
-    await findRun(client, db);
-    await findTransactionRun(client, db);
+      await updateOneRun(client, db, i + 1);
+      await updateOneTransactionRun(client, db, i + 1);
+      await updateManyRun(client, db, i + 1);
+      await updateManyTransactionRun(client, db, i + 1);
 
-    await insertOneUpdateOneDeleteOneRun(client, db);
-    await insertOneUpdateOneDeleteOneTransactionRun(client, db);
-    await insertManyUpdateManyDeleteManyRun(client, db);
-    await insertManyUpdateManyDeleteManyTransactionRun(client, db);
-    await insertOneUpdateOneDeleteOneFindOneRun(client, db);
-    await insertOneUpdateOneDeleteOneFindOneTransactionRun(client, db);
-    await insertManyUpdateManyDeleteManyFindRun(client, db);
-    await insertManyUpdateManyDeleteManyFindTransactionRun(client, db);
+      await deleteOneRun(client, db, i + 1);
+      await deleteOneTransactionRun(client, db, i + 1);
+      await deleteManyRun(client, db, i + 1);
+      await deleteManyTransactionRun(client, db, i + 1);
 
-    await db.collection('users').drop();
-    await db.collection('users1').drop();
-    await db.collection('users2').drop();
-    await db.collection('users3').drop();
+      await findOneRun(client, db, i + 1);
+      await findOneTransactionRun(client, db, i + 1);
+      await findRun(client, db, i + 1);
+      await findTransactionRun(client, db, i + 1);
+
+      await insertOneUpdateOneDeleteOneRun(client, db, i + 1);
+      await insertOneUpdateOneDeleteOneTransactionRun(client, db, i + 1);
+      await insertManyUpdateManyDeleteManyRun(client, db, i + 1);
+      await insertManyUpdateManyDeleteManyTransactionRun(client, db, i + 1);
+      await insertOneUpdateOneDeleteOneFindOneRun(client, db, i + 1);
+      await insertOneUpdateOneDeleteOneFindOneTransactionRun(client, db, i + 1);
+      await insertManyUpdateManyDeleteManyFindRun(client, db, i + 1);
+      await insertManyUpdateManyDeleteManyFindTransactionRun(client, db, i + 1);
+
+      await db.collection('users').drop();
+      await db.collection('users1').drop();
+      await db.collection('users2').drop();
+      await db.collection('users3').drop();
+    }
+
+    await result();
     await client.close();
     await replSet.stop();
     process.exit();
