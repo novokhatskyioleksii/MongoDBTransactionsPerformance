@@ -4,6 +4,7 @@ const MongoMemoryReplSet = require('mongodb-memory-server').MongoMemoryReplSet;
 const fs = require('fs');
 const util = require('util');
 
+const mkdirAsync = util.promisify(fs.mkdir);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 const replSet = new MongoMemoryReplSet({
@@ -62,10 +63,11 @@ const fun = async () => {
       // db.collection('usersInserted').find(filter).toArray(),
       // db.collection('usersUpdated').find(filter).toArray(),
       // db.collection('usersDeleted').find(filter).toArray(),
-      await session.commitTransaction(),
+      session.commitTransaction(),
     ]);
     session.endSession();
 
+    await mkdirAsync(`./results-fun/${numberOfUsers}`, { recursive: true });
     // await writeFileAsync(`./results-fun/${numberOfUsers}/usersInserted.json`, JSON.stringify({
     //   inserted: results[0].length,
     //   notInserted: 1000 - results[0].length,
