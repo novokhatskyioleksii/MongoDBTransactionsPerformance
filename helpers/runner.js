@@ -41,7 +41,7 @@ const runIterations = async (op, client, db, name) => {
 const runOp = async (op, client, db, path, name, i) => {
   const results = await runIterations(op, client, db, name);
   await mkdirAsync(`../results/${i}/${path}`, { recursive: true });
-  await writeFileAsync(`../results/${i}/${path}/${name}Results.json`, JSON.stringify({ results }, null, 2));
+  await writeFileAsync(`../results/${i}/${path}/${name}.json`, JSON.stringify({ results }, null, 2));
 };
 
 module.exports = runOp;

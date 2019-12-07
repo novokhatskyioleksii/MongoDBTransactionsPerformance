@@ -133,18 +133,18 @@ const savePlot = async (path, fileName, html) => {
 };
 
 const saveJson = async (results, resultsT, title) => {
-  await mkdirAsync('../results-calc', { recursive: true });
+  await mkdirAsync(`../results-calc/${title}`, { recursive: true });
   try {
-    await statAsync('../results-calc/results.json');
+    await statAsync(`../results-calc/${title}/results.json`);
   } catch (e) {
-    await writeFileAsync('../results-calc/results.json', JSON.stringify({ [title]: { t: [], n: [] } }, null, 2));
+    await writeFileAsync(`../results-calc/${title}/results.json`, JSON.stringify({ t: [], n: [] }, null, 2));
   }
-  const file = await readFileAsync('../results-calc/results.json');
-  const resultsCalc = JSON.parse(file);
-  if (!resultsCalc[title]) resultsCalc[title] = { t: [], n: [] };
-  resultsCalc[title].n.push(...results);
-  resultsCalc[title].t.push(...resultsT);
-  await writeFileAsync('../results-calc/results.json', JSON.stringify(resultsCalc, null, 2));
+  const file = await readFileAsync(`../results-calc/${title}/results.json`);
+  let resultsCalc = JSON.parse(file);
+  if (!resultsCalc) resultsCalc = { t: [], n: [] };
+  resultsCalc.n.push(...results);
+  resultsCalc.t.push(...resultsT);
+  await writeFileAsync(`../results-calc/${title}/results.json`, JSON.stringify(resultsCalc, null, 2));
 };
 
 module.exports = {
