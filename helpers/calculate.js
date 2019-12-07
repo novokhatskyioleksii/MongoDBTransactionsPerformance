@@ -8,6 +8,27 @@ const statAsync = util.promisify(fs.stat);
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
+const shuffle = (array) => {
+  let currentIndex = array.length;
+  let temporaryValue;
+  let randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+};
+
 // Arithmetic mean
 const getMean = (data) => data.reduce((a, b) => Number(a) + Number(b)) / data.length;
 
@@ -41,9 +62,9 @@ const filterOutliers = (someArray) => {
   return values.filter((x) => (x <= maxValue) && (x >= minValue));
 };
 
-const calculate = async (results, resultsT, path, filename, i) => {
-  const filteredResult = filterOutliers(results.map((result) => Object.values(result)[0]));
-  const filteredResultT = filterOutliers(resultsT.map((result) => Object.values(result)[0]));
+const calculate = async (results, resultsT, title) => {
+  const filteredResult = filterOutliers(results);
+  const filteredResultT = filterOutliers(resultsT);
 
   const t = filteredResult.concat(new Array(results.length - filteredResult.length).fill(null));
   const tt = filteredResultT.concat(new Array(resultsT.length - filteredResultT.length).fill(null));
@@ -52,8 +73,6 @@ const calculate = async (results, resultsT, path, filename, i) => {
   const y = [t, tt];
 
   const plot = new Plot();
-
-  const title = filename.replace('Transaction', '').replace('Results', '').replace('.json', '');
 
   plot.x = x;
   plot.y = y;
@@ -76,9 +95,19 @@ const calculate = async (results, resultsT, path, filename, i) => {
 
   const vtree = plot.render('html');
 
-  const nullHypothesis = ttest(filteredResult, filteredResultT).valid();
+  return vtree + makeHtml(filteredResult, filteredResultT, title);
+};
 
-  const isTWin = getMean(filteredResultT) < getMean(filteredResult);
+const makeHtml = (result, resultT, title) => {
+  const nullHypothesis = ttest(result, resultT).valid();
+
+  const filteredResultMean = getMean(result);
+  const filteredResultTMean = getMean(resultT);
+
+  const isTWin = filteredResultTMean < filteredResultMean;
+
+  const faster = `${(100 - (filteredResultTMean * 100 / filteredResultMean)).toFixed(0)} %`;
+  const slower = `${((filteredResultTMean * 100 / filteredResultMean) - 100).toFixed(0)} %`;
 
   const success = `
 <h4>Is statistically significant: <span style="color: green; text-transform: uppercase">${!nullHypothesis}</span></h4>
@@ -91,12 +120,19 @@ const calculate = async (results, resultsT, path, filename, i) => {
 
   const final = !nullHypothesis ? success : fail;
 
-  await mkdirAsync(`../results-plots/${i}/${path}`, { recursive: true });
-  await writeFileAsync(`../results-plots/${i}/${path}/${filename.replace('Transaction', '').replace('json', 'html')}`, vtree
-      + `<h3>Mean with standard deviation</h3>
-<h4 style="color: teal">(No transaction): ${getMean(filteredResult).toFixed(2)} &#177; ${getSD(filteredResult).toFixed(2)} microseconds</h4>
-<h4 style="color: #ffbf00">(Transaction): ${getMean(filteredResultT).toFixed(2)} &#177; ${getSD(filteredResultT).toFixed(2)} microseconds</h4>`
-      + final);
+  return `<h2>${title}</h2><h3>Mean with standard deviation</h3>
+<h4 style="color: teal">(No transaction): ${filteredResultMean.toFixed(2)} &#177; ${getSD(result).toFixed(2)} microseconds</h4>
+<h4 style="color: #ffbf00">(Transaction): ${filteredResultTMean.toFixed(2)} &#177; ${getSD(resultT).toFixed(2)} microseconds</h4>`
+  + final
+  + `<h3>${isTWin ? 'Transaction is <span style="color: green">faster</span>: ' : 'Transaction is <span style="color: red">slower</span>: '} ${isTWin ? faster : slower}</h3>`;
+};
+
+const savePlot = async (path, fileName, html) => {
+  await mkdirAsync(path, { recursive: true });
+  await writeFileAsync(`${path}/${fileName}`, html);
+};
+
+const saveJson = async (results, resultsT, title) => {
   await mkdirAsync('../results-calc', { recursive: true });
   try {
     await statAsync('../results-calc/results.json');
@@ -106,14 +142,18 @@ const calculate = async (results, resultsT, path, filename, i) => {
   const file = await readFileAsync('../results-calc/results.json');
   const resultsCalc = JSON.parse(file);
   if (!resultsCalc[title]) resultsCalc[title] = { t: [], n: [] };
-  resultsCalc[title].t.push(getMean(filteredResultT));
-  resultsCalc[title].n.push(getMean(filteredResult));
+  resultsCalc[title].n.push(...results);
+  resultsCalc[title].t.push(...resultsT);
   await writeFileAsync('../results-calc/results.json', JSON.stringify(resultsCalc, null, 2));
 };
 
 module.exports = {
+  shuffle,
   getMean,
   getSD,
   filterOutliers,
   calculate,
+  makeHtml,
+  savePlot,
+  saveJson,
 };

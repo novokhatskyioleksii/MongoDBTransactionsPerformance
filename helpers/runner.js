@@ -32,7 +32,7 @@ const runIterations = async (op, client, db, name) => {
   for (let i of iterations300) {
     // await timeout(50);
     const result = await op(client, db, i);
-    results.push({ [i]: result });
+    results.push(result);
     bar.tick(i + 1);
   }
   return results;
