@@ -33,7 +33,7 @@ const result = async () => {
       const results = JSON.parse(file);
       const html = await calculate(results.n, results.t, title);
       await savePlot(`../results-final/${title}`, 'results.html', html);
-      htmlFinal += makeHtml(filterOutliers(results.n), filterOutliers(results.t), title);
+      htmlFinal += `<div style="font-family: Roboto">${makeHtml(filterOutliers(results.n), filterOutliers(results.t), title)}<br></div>`;
     } catch (e) {}
   }
   await mkdirAsync('../results-final', { recursive: true });

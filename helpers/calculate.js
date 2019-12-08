@@ -8,6 +8,7 @@ const statAsync = util.promisify(fs.stat);
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
+// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 const shuffle = (array) => {
   let currentIndex = array.length;
   let temporaryValue;
@@ -29,6 +30,7 @@ const shuffle = (array) => {
   return array;
 };
 
+// https://dustinpfister.github.io/2018/02/20/statistics-standard-deviation
 // Arithmetic mean
 const getMean = (data) => data.reduce((a, b) => Number(a) + Number(b)) / data.length;
 
@@ -38,6 +40,7 @@ let getSD = (data) => {
   return Math.sqrt(data.reduce((sq, n) => sq + Math.pow(n - m, 2), 0) / (data.length - 1));
 };
 
+// https://stackoverflow.com/questions/20811131/javascript-remove-outlier-from-an-array
 const filterOutliers = (someArray) => {
   // Copy the values, rather than operating on references to existing values
   const values = someArray.concat();
@@ -120,11 +123,14 @@ const makeHtml = (result, resultT, title) => {
 
   const final = !nullHypothesis ? success : fail;
 
-  return `<h2>${title}</h2><h3>Mean with standard deviation</h3>
+  return `
+<h2>${title}</h2>
+<h3>Mean with standard deviation</h3>
 <h4 style="color: teal">(No transaction): ${filteredResultMean.toFixed(2)} &#177; ${getSD(result).toFixed(2)} microseconds</h4>
-<h4 style="color: #ffbf00">(Transaction): ${filteredResultTMean.toFixed(2)} &#177; ${getSD(resultT).toFixed(2)} microseconds</h4>`
-  + final
-  + `<h3>${isTWin ? 'Transaction is <span style="color: green">faster</span>: ' : 'Transaction is <span style="color: red">slower</span>: '} ${isTWin ? faster : slower}</h3>`;
+<h4 style="color: #ffbf00">(Transaction): ${filteredResultTMean.toFixed(2)} &#177; ${getSD(resultT).toFixed(2)} microseconds</h4>
+${final}
+<h3>${isTWin ? 'Transaction is <span style="color: green">faster</span>: ' : 'Transaction is <span style="color: red">slower</span>: '} ${isTWin ? faster : slower}</h3>
+`;
 };
 
 const savePlot = async (path, fileName, html) => {
